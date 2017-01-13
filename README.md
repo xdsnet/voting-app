@@ -29,7 +29,7 @@
  `STORMPATH_CLIENT_APIKEY_SECRET` | 字符串值，由stormpath提供 | 是 
  `STORMPATH_APPLICATION_HREF` | `https://api.stormpath.com/v1/applications/<字符串>`，其中的字符串由stormpath提供 | 是 
 
- ## 待完善或补充（不一定实施）
+## 待完善或补充（不一定实施）
 
 1. mongodb切换为postgresql进行数据存储的版本设计（herokuapp提供免费的postgresql），
 1. 对stormpath的相关页面定制（因为strompath上相关文档缺少，它文档中关于相关页面定制以ejs举例，但其实际实现模板又是jade，再有jade最近还闹了更名为pug的事情，搞不懂啦。）
