@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <% include ../partials/header.ejs %>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-validator/0.5.3/css/bootstrapValidator.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-validator/0.5.3/js/bootstrapValidator.min.js"></script>
+</head>
+
+<body>
+  <% include ../partials/nav.ejs %>
+  <br>
+
+  <!-- Begin Container -->
+<div class="container">
+    <form action="/newPoll" id="newPollForm" method="get">
+    <div class="form-group">
+      <label for="question">问题:</label>
+      <input type="text" class="form-control" id="question" name="question" placeholder="输入问题">
+    </div>
+    <div class="form-group">
+      <label for="answers">输入选项 (每个备选项用英文分号隔开):</label>
+      <input type="text" class="form-control" id="answers" name="answers" placeholder="输入备选项，用';'隔开">
+    </div>
+    <div class="form-group">
+      <input type="submit" value="Submit" class="btn btn-default">
+    </div>
+  </form>
+</div>
+  <!-- /.container -->
+  <% include ../partials/footer.ejs %>
+<script type="text/javascript">
+$('#newPollForm').bootstrapValidator({
+            message: 'This value is not valid',
+            feedbackIcons: {/*输入框不同状态，显示图片的样式*/
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {/*验证*/
+                question: {/*键名username和input name值对应*/
+                    message: 'The username is not valid',
+                    validators: {
+                        notEmpty: {/*非空提示*/
+                            message: '投票问题不能为空'
+                        }
+                    }
+                },
+                answers: {
+                    message:'备选项无效',
+                    validators: {
+                        notEmpty: {
+                            message: '备选项不能为空'
+                        },
+                        regexp: {
+                            regexp: /^.*\S+.*;.*\S+.*$/i,
+                          message: '至少包含1个;符且前后均有非空内容'
+                        }
+                    }
+                }
+            }
+        });
+</script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <% include ../partials/header.ejs %>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <% include ../partials/nav.ejs %>
+        <br>
+        <!-- Begin Container -->
+        <div class="container" id="pollData">
+            <h2 id="qid"></h2>
+            <p id="qid2">还没有人投过票.</p>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label for="sel1">投票:</label>
+                        <select class="form-control" id="sel1">
+								<option>选择一个支持的项</option>
+							</select>
+                    </div>
+                    <div id="newans2" style="display: none;">输入一个新的项:<input type="text" id="newans"  placeholder="不包含; 且不能为空"></div><br>
+                    <div id="voteLink" style="display: none;"><a href="#" class="btn btn-info" onclick="voted();">支持该项</a></div><br>
+                    <div id="delLink" style="display: none;"></div><br>
+                    <a href="https://twitter.com/share" class="twitter-share-button" data-size="large" data-text="看看这个投票:" data-show-count="false">Tweet</a>
+                </div>
+                <div class="col-sm-8">
+                    <div id="piechart" style="width: 600px; height: 500px;"></div>
+                </div>
+            </div>
+        </div>
+        <!-- /.container -->
+
+        <% include ../partials/footer.ejs %>
+        <script>
+        var authUserName = <%- JSON.stringify(user) %>;
+        var datapoints;
+            $('#newans2').hide();
+            $('#qid2').hide();
+            $('#voteLink').hide();
+             $('#delLink').hide();
+            var pollID = getQueryVariable("id");
+            $.ajax({
+                type: 'GET',
+                url: '/getSinglePoll?id=' + pollID,
+                success: function(dataP) {
+                    //console.log(dataP);
+                    datapoints = dataP;
+                    if(datapoints.poll.user === authUserName) {
+                      $('#delLink').html('<a href="/deletePoll?id='+datapoints.poll._id+'" class="btn btn-danger">删除投票项目</a>');
+                      $('#delLink').show();
+                    }
+                    var tempAnswers = [  // 为图形化显示处理数据构成
+                        ['Answer', 'Votes']
+                    ];
+                    var options2 = [];
+                    var noData = true;
+                    for (var i = 0; i < datapoints.poll.answers.length; i++) {
+                        tempAnswers.push([datapoints.poll.answers[i].answer, datapoints.poll.answers[i].total]);
+                        if (datapoints.poll.answers[i].total > 0) {
+                            noData = false;
+                        }
+                        options2.push(datapoints.poll.answers[i].answer);
+                    }
+                    if(authUserName.indexOf("_null_")!=0){
+                        options2.push("新选项");
+                    }
+                    google.charts.load('current', {
+                        'packages': ['corechart']
+                    });
+                    google.charts.setOnLoadCallback(drawChart);
+
+                    function drawChart() {
+
+                        var data = google.visualization.arrayToDataTable(tempAnswers);
+
+                        var options = {
+                            title: datapoints.poll.question,
+                            pieSliceText: 'value-and-percentage'
+                        };
+
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+                        chart.draw(data, options);
+                        if (noData) {
+                            $('#piechart').hide();
+                            $('#qid').html(datapoints.poll.question);
+                            $('#qid2').show();
+
+                        }
+
+                        var select = document.getElementById("sel1");
+                        for (var i = 0; i < options2.length; i++) {
+                            var opt = options2[i];
+                            var el = document.createElement("option");
+                            el.textContent = opt;
+                            el.value = opt;
+                            select.appendChild(el);
+                        }
+                    }
+                }
+            });
+
+            function getQueryVariable(variable) {
+                var query = window.location.search.substring(1);
+                var vars = query.split("&");
+                for (var i = 0; i <
+                    vars.length; i++) {
+                    var pair = vars[i].split("=");
+                    if (pair[0] == variable) {
+                        return pair[1];
+                    }
+                }
+                return (false);
+            }
+            
+            $( "#sel1" ).change(function() {
+                var tempVal = this.value;
+                if(tempVal === "选择一个支持的项"){
+                  $('#voteLink').hide();
+                }
+                else {
+                    $('#voteLink').show();
+                }
+                if(tempVal === "新选项"){
+                    $('#newans2').show();
+                }
+                else{
+                    $('#newans2').hide();
+                }
+            });
+
+            function HasOldA(inA){
+                for(var i=0;i<datapoints.poll.answers.length;i++){
+                    if (inA==datapoints.poll.answers[i].answer)
+                        return true;
+                }
+                return false;
+            }
+            function HasVoted(){
+                for(var i=0;i<datapoints.poll.userlist.length;i++){
+                    if (authUserName==datapoints.poll.userlist[i])
+                        return true;
+                }
+                return false;
+            }
+            function voted() {
+                if(HasVoted()){
+                    alert("您已经投过票了！不能重复投票！");
+                    return ;
+                }
+                if($( "#sel1" ).val() === "新选项"){
+                    var _newans=$.trim($("#newans").val());
+                    if (_newans=="" || _newans.indexOf(';') > -1 ){
+                        alert("新选项没有非空值或者含有';'字符！");
+                    }else if(HasOldA(_newans)){
+                        alert("已经有该选项了！");
+                    }else{
+                        datapoints.poll.answers.push({"answer":$( "#newans" ).val(),"total":1});
+                        datapoints.poll.userlist.push(authUserName);
+                        $.ajax({
+                            type: 'POST',
+                            url: '/updatePoll',
+                            contentType: 'application/json',
+                            data: JSON.stringify(datapoints),
+                            success: function(data) {
+                                //console.log(data);
+                                location.reload();
+                            }
+                        });
+                    }
+                }
+                else {
+                    for(var i = 0; i < datapoints.poll.answers.length; i++){
+                        if(datapoints.poll.answers[i].answer === $( "#sel1" ).val()){
+                            datapoints.poll.answers[i].total++;
+                        }
+                    }
+                    datapoints.poll.userlist.push(authUserName);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/updatePoll',
+                        contentType: 'application/json',
+                        data: JSON.stringify(datapoints),
+                        success: function(data) {
+                            //console.log(data);
+                            location.reload();
+                        }
+                    });
+                }
+            }
+        </script>
+</body>
+
+</html>

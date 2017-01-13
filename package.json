@@ -1,0 +1,33 @@
+{
+  "name": "voting-app",
+  "version": "1.0.0",
+  "description": "ok",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xdsnet/voting-app.git"
+  },
+  "keywords": [
+    "fcc",
+    "voting-app"
+  ],
+  "author": "xdsnet",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xdsnet/voting-app/issues"
+  },
+  "homepage": "https://github.com/xdsnet/voting-app#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "dotenv": "^4.0.0",
+    "ejs": "^2.5.5",
+    "express": "^4.14.0",
+    "express-stormpath": "^3.1.8",
+    "ladash": "^1.2.0",
+    "mongodb": "^2.2.20"
+  }
+}
